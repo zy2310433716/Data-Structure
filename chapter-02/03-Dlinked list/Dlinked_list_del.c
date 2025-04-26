@@ -95,6 +95,8 @@ int main()
 
     // 删除
     deleteNode(list, 2);
+
+    // 再次遍历
     listNode(list);
     return 0;
 }

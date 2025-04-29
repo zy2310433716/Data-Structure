@@ -1,48 +1,57 @@
 #include <stdio.h>
 #include <stdlib.h>
+
 // 定义元素类型
 typedef int ElemType;
 
-// 定义链表结构体
-typedef struct node
+// 定义双链表
+typedef struct dnode
 {
     ElemType data;
-    struct node *next;
-} Node;
+    struct dnode *next;
+    struct dnode *prev;
 
-// 链表初始化
-Node *initList()
+} Dnode;
+
+// 初始化双链表
+Dnode *initList()
 {
-    Node *head = (Node *)malloc(sizeof(Node));
+    Dnode *head = (Dnode *)malloc(sizeof(Dnode));
     if (head == NULL)
     {
         perror("malloc failed");
         exit(EXIT_FAILURE);
     }
     head->data = 0;
-    head->next = NULL;
+    head->next = 0;
+    head->prev = 0;
     return head;
 }
 
-// 头插法插入元素
-int insertHead(Node *l, ElemType e)
+// 头插法
+int insertHead(Dnode *l, ElemType e)
 {
-    Node *p = (Node *)malloc(sizeof(Node));
+    Dnode *p = (Dnode *)malloc(sizeof(Dnode));
     if (p == NULL)
     {
         perror("malloc failed");
         exit(EXIT_FAILURE);
     }
     p->data = e;
+    p->prev = l;
     p->next = l->next;
+    if (l->next != NULL)
+    {
+        l->next->prev = p;
+    }
     l->next = p;
     return 1;
 }
 
 // 遍历链表
-void traverseList(Node *l)
+void traverseList(Dnode *l)
 {
-    Node *p = l->next;
+    Dnode *p = l->next;
     while (p != NULL)
     {
         printf("%d ", p->data);
@@ -50,10 +59,11 @@ void traverseList(Node *l)
     }
     printf("\n");
 }
+
 // 获取尾节点
-Node *get_tail(Node *l)
+Dnode *get_tail(Dnode *l)
 {
-    Node *p = l;
+    Dnode *p = l;
     while (p->next != NULL)
     {
         p = p->next;
@@ -62,24 +72,25 @@ Node *get_tail(Node *l)
 }
 
 // 尾插法
-Node *insertTail(Node *tail, ElemType e)
+Dnode *insertTail(Dnode *tail, ElemType e)
 {
-    Node *p = (Node *)malloc(sizeof(Node));
+    Dnode *p = (Dnode *)malloc(sizeof(Dnode));
     if (p == NULL)
     {
         perror("malloc failed");
         exit(EXIT_FAILURE);
     }
     p->data = e;
+    p->prev = tail;
     tail->next = p;
     p->next = NULL;
     return p;
 }
 
 // 指定位置插入
-int insertList(Node *l, int pos, ElemType e)
+int insertNode(Dnode *l, int pos, ElemType e)
 {
-    Node *p = l;
+    Dnode *p = l;
     for (int i = 0; i < pos - 1; i++)
     {
         p = p->next;
@@ -88,23 +99,28 @@ int insertList(Node *l, int pos, ElemType e)
             return 0;
         }
     }
-    // 创建新节点
-    Node *q = (Node *)malloc(sizeof(Node));
+
+    Dnode *q = (Dnode *)malloc(sizeof(Dnode));
     if (q == NULL)
     {
         perror("malloc failed");
         exit(EXIT_FAILURE);
     }
     q->data = e;
+    q->prev = p;
     q->next = p->next;
+    if (p->next != NULL)
+    {
+        p->next->prev = q;
+    }
     p->next = q;
     return 1;
 }
 
-// 指定位置删除
-int delList(Node *l, int pos)
+// 删除节点
+int deleteNode(Dnode *l, int pos)
 {
-    Node *p = l;
+    Dnode *p = l;
     for (int i = 0; i < pos - 1; i++)
     {
         p = p->next;
@@ -116,25 +132,28 @@ int delList(Node *l, int pos)
 
     if (p->next == NULL)
     {
-        printf("删除的位置有误\n");
+        printf("要删除的位置错误\n");
         return 0;
     }
-
-    Node *q = p->next;
+    Dnode *q = p->next;
     p->next = q->next;
+    if (q->next != NULL)
+    {
+        q->next->prev = p;
+    }
     free(q);
     return 1;
 }
 
 // 获取链表长度
-int listLength(Node *l)
+int listLength(Dnode *l)
 {
     if (l == NULL)
     {
         printf("警告：尝试访问已销毁的链表\n");
         return 0;
     }
-    Node *p = l->next;
+    Dnode *p = l->next;
     int len = 0;
     while (p != NULL)
     {
@@ -145,7 +164,7 @@ int listLength(Node *l)
 }
 
 // 释放链表
-int freeList(Node *l)
+int freeList(Dnode *l)
 {
     if (l == NULL)
     {
@@ -153,8 +172,8 @@ int freeList(Node *l)
         return 0;
     }
 
-    Node *p = l->next;
-    Node *temp;
+    Dnode *p = l->next;
+    Dnode *temp;
 
     while (p != NULL)
     {
@@ -165,34 +184,36 @@ int freeList(Node *l)
     free(l);
     return 1;
 }
+
 int main()
 {
-    // 定义一个链表并初始化
-    Node *list = initList();
+    // 创建链表
+    Dnode *list = initList();
 
     // 头插法
     insertHead(list, 10);
     insertHead(list, 20);
     insertHead(list, 30);
-    printf("当前链表的长度为：%d\n", listLength(list));
-    // 遍历链表
+
+    // 遍历
     traverseList(list);
+    printf("当前链表的长度为：%d\n", listLength(list));
 
     // 尾插法
-    Node *tail = get_tail(list);
+    Dnode *tail = get_tail(list); // 获取尾结点
     tail = insertTail(tail, 730);
-    tail = insertTail(tail, 740);
+    tail = insertTail(tail, 750);
     tail = insertTail(tail, 760);
     traverseList(list);
+    printf("当前链表的长度为：%d\n", listLength(list));
 
     // 指定位置插入
-    insertList(list, 5, 735);
+    insertNode(list, 5, 740);
     traverseList(list);
 
-    // 指定位置删除节点
-    delList(list, 5);
+    // 删除节点
+    deleteNode(list, 6);
     traverseList(list);
-    printf("当前链表的长度为：%d\n", listLength(list));
 
     // 释放链表
     if (freeList(list) == 1)
